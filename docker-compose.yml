@@ -1,0 +1,23 @@
+version: "3.6"
+
+services:
+  app:
+    container_name: $APP_CONTAINER_NAME
+    build:
+      context: .
+      dockerfile: dockerfiles/app.Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/usr/app
+    env_file:
+      - .env
+    environment:
+      - CURRENT_CONTAINER=APP
+    tty: true
+    networks:
+      - terraform-poc
+
+networks:
+  terraform-poc:
+    driver: bridge
