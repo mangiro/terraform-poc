@@ -1,0 +1,15 @@
+# Ansible tmp files
+.ansible/
+*.retry
+
+# Terraform tmp files
+*.terraform/
+terraform/tfplan-local*
+terraform/terraform.tfstate*
+
+# Deploy tmp files
+created-ami-id.txt
+current-ami-id.txt
+deploy.log
+packer.log
+terraform.log
