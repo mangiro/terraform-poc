@@ -1,0 +1,53 @@
+---
+- name: Create required directories
+  file: >
+    state=directory
+    path={{ item }}
+  with_items:
+    - "/var/log/terraform-poc"
+
+- name: Deploy terraform-poc
+  shell: "cp -rfa /tmp/terraform-poc /opt/terraform-poc"
+
+- name:  Install Required Software
+  yum: >
+    name="{{ packages }}"
+    state=installed
+  vars:
+    packages:
+      - gcc
+      - "@Development\ Tools"
+      - expect
+      - libcurl-devel
+      - glibc-nss-devel
+      - nss-devel
+      - openssl-devel
+      - libffi-devel
+      - bzip2-devel
+
+- name: Download Python3.9
+  unarchive:
+    src: https://www.python.org/ftp/python/3.9.13/Python-3.9.13.tgz
+    dest: ./
+    remote_src: yes
+
+- name: Install Python3.9
+  shell: |
+    Python-3.9.13/configure --enable-optimizations
+    make altinstall
+
+- name: Download Poetry
+  get_url:
+    url: "https://install.python-poetry.org"
+    dest: /tmp/install-poetry.py
+
+- name: Install Poetry
+  command: "python3.9 /tmp/install-poetry.py"
+  environment:
+    POETRY_HOME: "/usr/local"
+
+- name: Install dependencies
+  shell: "cd /opt/terraform-poc && /usr/local/bin/poetry install --no-interaction --no-ansi"
+  environment:
+    POETRY_CACHE_DIR: "/var/cache/pypoetry"
+    POETRY_VIRTUALENVS_CREATE: false

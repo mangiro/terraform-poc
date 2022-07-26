@@ -1,0 +1,28 @@
+---
+- name: Deploy Terraform PoC
+  hosts: localhost
+  connection: local
+
+  pre_tasks:
+    - name: Check for required variables
+      fail: >
+        msg="Variable item|string is not defined"
+      when: " item|string is not defined"
+      with_items:
+        - env
+
+    - name: Set config_profile
+      set_fact:
+        config_profile: "local"
+      when:
+        env == "local"
+
+    - name: Print required variables
+      debug: >
+        var={{ item }}
+      with_items:
+        - env
+        - config_profile
+
+  roles:
+    - name: terraform-poc
