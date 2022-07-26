@@ -18,6 +18,29 @@ services:
     networks:
       - terraform-poc
 
+  infra:
+    container_name: $INFRA_CONTAINER_NAME
+    build:
+      context: .
+      dockerfile: dockerfiles/infra.Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/usr/infra
+      - ./dockerfiles/certs/ca:/certs/ca
+      - ./dockerfiles/certs/client:/certs/client
+    env_file:
+      - .env
+    environment:
+      - CURRENT_CONTAINER=INFRA
+      - DOCKER_TLS_CERTDIR=/certs
+    tty: true
+    privileged: true
+    networks:
+      terraform-poc:
+        aliases:
+          - docker
+
 networks:
   terraform-poc:
     driver: bridge
