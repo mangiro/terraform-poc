@@ -1,0 +1,63 @@
+{
+    "builders": [
+        {
+            "type": "docker",
+            "image": "amazonlinux:latest",
+            "commit": true
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "environment_vars": [
+                "PACKER_USER={{ user `username` }}",
+                "PACKER_KEY={{ user `private_key` }}"
+            ],
+            "script": "ami-builder/sys_cfg.sh"
+        },
+        {
+            "type": "shell",
+            "inline": [
+              "mkdir -p /tmp/terraform-poc"
+            ]
+        },
+        {
+            "type": "file",
+            "source": "{{ user `project_folder` }}/app.zip",
+            "destination": "/tmp/terraform-poc/"
+        },
+        {
+            "type": "shell",
+            "inline": [
+              "unzip /tmp/terraform-poc/app.zip -d /tmp/terraform-poc/",
+              "ls -lhart /tmp/terraform-poc"
+            ]
+        },
+        {
+            "type": "ansible-local",
+            "command": "PYTHONUNBUFFERED=1 ansible-playbook",
+            "playbook_file": "playbooks/deploy.yml",
+            "staging_directory": "/tmp/ansible-packer-build",
+            "clean_staging_directory": "true",
+            "role_paths": [
+              "roles/terraform-poc"
+            ],
+            "extra_arguments": [
+              "--extra-vars",
+              "env={{ user `env` }}",
+              "--become",
+              "--become-method=sudo",
+              "--become-user=root"
+            ]
+        }
+    ],
+    "post-processors": [
+        [
+            {
+                "type": "docker-tag",
+                "repository": "terraform-poc",
+                "tag": "{{ user `env` }}-{{ user `commit_hash` }}"
+            }
+        ]
+    ]
+}
